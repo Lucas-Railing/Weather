@@ -1,18 +1,18 @@
-import csv
-import matplotlib.pyplot as plt
-import datetime
+from csv import reader
+from datetime import datetime
 from scipy.optimize import curve_fit
-import numpy as np
-import math
+from numpy import asarray, sin, sqrt
+from collections import defaultdict
+from matplotlib import pyplot as plt
 
 month = input('What month is it?')
 day   = input('What day is it?')
-dt = datetime.datetime(2015, month, day, 0, 0)
+dt = datetime(2015, month, day, 0, 0)
 tt = dt.timetuple()
 DAY = tt.tm_yday
 
 f = open('700576.csv')
-wreader = csv.reader(f)
+wreader = reader(f)
 date = []
 Tmax = []
 Tmin = []
@@ -20,7 +20,9 @@ for x in wreader:
     date.append((x[5]))
     Tmax.append((x[41]))
     Tmin.append((x[46]))
-    
+
+
+#Removes 'flagged' data and converts to fahrenheit:
 date2 = []
 Tmax2 = []
 Tmin2 = []
@@ -35,26 +37,21 @@ while i < len(date):
 
 
 
+
+#Determines day of year as a number from 1-366:
 aday = []
 nyear = []
 for x in date2:
     nyear.append(int(x[0:4]))
-    dt = datetime.datetime(int(x[0:4]), int(x[4:6]), int(x[6:8]), 0, 0)
+    dt = datetime(int(x[0:4]), int(x[4:6]), int(x[6:8]), 0, 0)
     tt = dt.timetuple()
     aday.append(tt.tm_yday)
 
-#Generate a list of 366 blank lists:
-x = 1
-Dlist = []
-dlist = []
-while x < 367:
-    Dlist.append([])
-    dlist.append([])
-    x = x + 1
+#Create 366 Lists:
+Dlist = defaultdict(list)
+dlist = defaultdict(list)
 
-
-
-#Append each of those lists with temperatures according to which day of the year they fall on: 
+#Append each list (High-Dlist and Low-dlist) with temperatures according to which day of the year they fall on: 
 i = 0 
 while i < len(Tmax2):
     k = aday[i]
@@ -69,19 +66,19 @@ def avg(L):
 #Take an average of each list to find the average temperature for each day of the year:
 High = []
 SHigh =[]
-for x in Dlist:
+for x in Dlist.values(): 
     H = avg(x)
     High.append(H)
     sq = avg([s*s for s in x])
-    S = math.sqrt(sq - (avg(x))**2)
+    S = sqrt(sq - (avg(x))**2)
     SHigh.append(S)
 
 Low = []
 SLow =[]
-for x in dlist:
+for x in dlist.values():
     L = avg(x)
     sq = avg([s*s for s in x])
-    S = math.sqrt(sq - (avg(x))**2)
+    S = sqrt(sq - (avg(x))**2)
     SLow.append(S)
     Low.append(L)
 
@@ -92,11 +89,11 @@ Day = list(k)
 
 
 #Begin Curve fit.
-x = np.asarray(Day)
-y = np.asarray(High)
+x = asarray(Day)
+y = asarray(High)
 
 def Lin(x, a, w, b, o):
-    return a*np.sin(w*x + b) + o
+    return a*sin(w*x + b) + o
 
 
 popt, pcov = curve_fit(Lin, x, y, p0 = [35, 0.016, 30, 20])
@@ -106,7 +103,7 @@ b = popt[1]
 c = popt[2]
 d = popt[3]
 
-H = a*math.sin(b*DAY + c) + d
+H = Lin(DAY, a, b, c, d)
 HList = [a,b,c,d]
 
 #End Curve fit.
@@ -126,8 +123,8 @@ while t < len(Day):
     t = t + 1
 
 
-x = np.asarray(Day)
-y = np.asarray(Low)
+x = asarray(Day)
+y = asarray(Low)
 
 
 popt, pcov = curve_fit(Lin, x, y, p0 = [35, 0.016, 30, 20])
@@ -137,9 +134,9 @@ b = popt[1]
 c = popt[2]
 d = popt[3]
 
-L = a*math.sin(b*DAY + c) + d
-
+L = Lin(DAY, a, b, c, d)
 LList = [a,b,c,d]
+
 LFit = []
 t = 0
 while t < len(Day):
@@ -157,47 +154,47 @@ print
 print "The average high for today is", H, '.'
 print "The average low for today is", L, '.'
 
-open('Avg.txt', 'w').close()
-F = open('Avg.txt', 'w')
+#open('Avg.txt', 'w').close()
+#F = open('Avg.txt', 'w')
 
-i = 0
-while i < 366:
-    F.write(str(High[i]))
-    F.write('  ')
-    F.write(str(Low[i]))
-    F.write('  ')
-    F.write(str(HFit[i]))
-    F.write('  ')
-    F.write(str(LFit[i]))
-    F.write('  ')
-    F.write(str(SHigh[i]))
-    F.write('  ')
-    F.write(str(SLow[i]))
-    F.write('  ')
-    F.write('\n')
-    i += 1
-while i < 367:
-    F.write(str(HList[0]))
-    F.write('  ')
-    F.write(str(HList[1]))
-    F.write('  ')
-    F.write(str(HList[2]))
-    F.write('  ')  
-    F.write(str(HList[3]))
-    F.write('  ')
-    F.write('\n')
-    F.write(str(LList[0]))
-    F.write('  ')
-    F.write(str(LList[1]))
-    F.write('  ')
-    F.write(str(LList[2]))
-    F.write('  ')  
-    F.write(str(LList[3]))
-    F.write('  ')
-    F.write('\n')
-    i += 1
+#i = 0
+#while i < 366:
+#    F.write(str(High[i]))
+#    F.write('  ')
+#    F.write(str(Low[i]))
+#    F.write('  ')
+#    F.write(str(HFit[i]))
+#    F.write('  ')
+#    F.write(str(LFit[i]))
+#    F.write('  ')
+#    F.write(str(SHigh[i]))
+#    F.write('  ')
+#    F.write(str(SLow[i]))
+#    F.write('  ')
+#    F.write('\n')
+#    i += 1
+#while i < 367:
+#    F.write(str(HList[0]))
+#    F.write('  ')
+#    F.write(str(HList[1]))
+#    F.write('  ')
+#    F.write(str(HList[2]))
+#    F.write('  ')  
+#    F.write(str(HList[3]))
+#    F.write('  ')
+#    F.write('\n')
+#    F.write(str(LList[0]))
+#    F.write('  ')
+#    F.write(str(LList[1]))
+#    F.write('  ')
+#    F.write(str(LList[2]))
+#    F.write('  ')  
+#    F.write(str(LList[3]))
+#    F.write('  ')
+#    F.write('\n')
+#    i += 1
 
-F.close()
+#F.close()
 
 fig = plt.figure(figsize = (15,8))
 fig.canvas.set_window_title('Weather Washington, PA')
