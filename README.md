@@ -1,6 +1,7 @@
 # Weather
-The programs in this repository are to predict weather on any day of the year based on averages for the past years. Just for those new to large scale data analysis (like myself) here are some key words for a Google search: averages of multiple lists, convert date to 1 through 365, 
+The programs in this repository are to predict weather on any day of the year based on averages for the past years. Just for those new to large scale data analysis (like myself) here are some key words for a Google search: averages of multiple lists, convert date to 1 through 366 (leap year).
 
+If you are not an experienced programmer in Python, use Weather.py. If you are and want to use this for weather data analysis, use Weather2.py and Weather3.py.
 
 The data in the csv file came from National Oceanic and Atmospheric Administration (noaa.org).
 
